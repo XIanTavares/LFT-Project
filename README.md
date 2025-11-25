@@ -1,2 +1,2 @@
 # LFT-Project
-Compilador em ZIG
+Compilador da linguagem Zig em Python
