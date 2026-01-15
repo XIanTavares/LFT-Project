@@ -42,13 +42,13 @@ assigns = [
 ]
 
 math_operators = [
-    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULUS', 'POWER',
+    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULUS',
     'PLUS_PERCENT', 'MINUS_PERCENT', 'TIMES_PERCENT',  # Operadores wrapping
     'PLUS_PLUS',  # Concatenação de arrays
 ]
 
 logical_operators = [
-    'LOGICAL_AND', 'LOGICAL_OR', 'NOT',
+    'NOT',
 ]
 
 compare_operators = [
@@ -176,6 +176,11 @@ reserved = {
 }
 
 # Comentários (ignorados)
+def t_COMMENT_BLOCK(t):
+    r'/\*[\s\S]*?\*/'
+    t.lexer.lineno += t.value.count('\n')
+    pass
+
 def t_COMMENT(t):
     r'//.*'
     pass
@@ -209,7 +214,6 @@ t_MODULUS_ASSIGN = r'%='
 t_BITWISE_AND_ASSIGN = r'&='
 t_BITWISE_OR_ASSIGN = r'\|='
 t_BITWISE_XOR_ASSIGN = r'\^='
-t_ASSIGN = r'='
 
 # Operadores wrapping do Zig (ordem importa)
 t_PLUS_PERCENT = r'\+%'
@@ -218,7 +222,6 @@ t_TIMES_PERCENT = r'\*%'
 
 # Operadores aritméticos
 t_PLUS_PLUS = r'\+\+'
-t_POWER = r'\*\*'
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
@@ -233,9 +236,9 @@ t_LESS_EQUALS = r'<='
 t_GREATER_THEN = r'>'
 t_LESS_THEN = r'<'
 
+t_ASSIGN = r'='
+
 # Operadores lógicos
-t_LOGICAL_AND = r'&&'
-t_LOGICAL_OR = r'\|\|'
 t_NOT = r'!'
 
 # Operadores bitwise
@@ -269,7 +272,7 @@ def t_STRING(t):
 
 # Caracteres
 def t_CHARACTER(t):
-    r"'([^'\\]|\\.)+'"
+    r"'([^'\\]|\\.)'"
     t.value = t.value[1:-1]  # Remove aspas simples
     # Processa escape sequences
     if len(t.value) == 2 and t.value[0] == '\\':
