@@ -39,16 +39,18 @@ assigns = [
     'MODULUS_ASSIGN', 'SHIFT_LEFT_ASSIGN', 'SHIFT_RIGHT_ASSIGN', 
     'BITWISE_AND_ASSIGN', 'BITWISE_OR_ASSIGN', 'BITWISE_XOR_ASSIGN',
     'PLUS_PERCENT_ASSIGN', 'MINUS_PERCENT_ASSIGN', 'TIMES_PERCENT_ASSIGN',
+    'PLUS_PIPE_ASSIGN', 'MINUS_PIPE_ASSIGN', 'TIMES_PIPE_ASSIGN',
 ]
 
 math_operators = [
-    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULUS', 'POWER',
+    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULUS',
     'PLUS_PERCENT', 'MINUS_PERCENT', 'TIMES_PERCENT',  # Operadores wrapping
     'PLUS_PLUS',  # Concatenação de arrays
+    'PLUS_PIPE', 'MINUS_PIPE', 'TIMES_PIPE',  # Operadores saturating
 ]
 
 logical_operators = [
-    'LOGICAL_AND', 'LOGICAL_OR', 'NOT',
+    'NOT',
 ]
 
 compare_operators = [
@@ -63,15 +65,18 @@ bitwise_operators = [
 
 others = [
     'IDENTIFIER',
+    'IDENTIFIER_ESCAPED',
     'LPAREN', 'RPAREN',  # ( )
     'LBRACKET', 'RBRACKET',  # [ ]
     'LBRACE', 'RBRACE',  # { }
     'SEMICOLON',  # ;
-    'STRING', 'CHARACTER',  # "string", 'c'
+    'STRING', 'C_STRING', 'CHARACTER',  # "string", c"string", 'c'
     'COMMA', 'DOT',  # , .
     'QUESTION_MARK',  # ?
     'COLON', 'DOUBLE_COLON',  # : ::
-    'ARROW',  # ->
+    'ARROW', 'SWITCH_ARROW',  # ->, =>
+    'RANGE', 'RANGE_INCLUSIVE',  # .. ..=
+    'OPTIONAL_UNWRAP', 'DEREF',  # .? .*
     'ELLIPSIS',  # ...
     'PIPE',  # |
     'AMPERSAND',  # &
@@ -176,6 +181,16 @@ reserved = {
 }
 
 # Comentários (ignorados)
+def t_IDENTIFIER_ESCAPED(t):
+    r'@"([^"\\]|\\.)+"'
+    t.value = t.value[2:-1]
+    return t
+
+def t_COMMENT_BLOCK(t):
+    r'/\*[\s\S]*?\*/'
+    t.lexer.lineno += t.value.count('\n')
+    pass
+
 def t_COMMENT(t):
     r'//.*'
     pass
@@ -183,7 +198,13 @@ def t_COMMENT(t):
 # Símbolos especiais (ordem importa para tokens compostos)
 t_ELLIPSIS = r'\.\.\.'
 t_DOUBLE_COLON = r'::'
+t_SWITCH_ARROW = r'=>'
 t_ARROW = r'->'
+
+t_RANGE_INCLUSIVE = r'\.\.='
+t_RANGE = r'\.\.'
+t_OPTIONAL_UNWRAP = r'\.\?'
+t_DEREF = r'\.\*'
 
 t_SEMICOLON = r';'
 t_COLON = r':'
@@ -199,6 +220,9 @@ t_HASH = r'\#'
 t_PLUS_PERCENT_ASSIGN = r'\+%='
 t_MINUS_PERCENT_ASSIGN = r'-%='
 t_TIMES_PERCENT_ASSIGN = r'\*%='
+t_PLUS_PIPE_ASSIGN = r'\+\|='
+t_MINUS_PIPE_ASSIGN = r'-\|='
+t_TIMES_PIPE_ASSIGN = r'\*\|='
 t_SHIFT_LEFT_ASSIGN = r'<<='
 t_SHIFT_RIGHT_ASSIGN = r'>>='
 t_PLUS_ASSIGN = r'\+='
@@ -209,16 +233,19 @@ t_MODULUS_ASSIGN = r'%='
 t_BITWISE_AND_ASSIGN = r'&='
 t_BITWISE_OR_ASSIGN = r'\|='
 t_BITWISE_XOR_ASSIGN = r'\^='
-t_ASSIGN = r'='
 
 # Operadores wrapping do Zig (ordem importa)
 t_PLUS_PERCENT = r'\+%'
 t_MINUS_PERCENT = r'-%'
 t_TIMES_PERCENT = r'\*%'
 
+# Operadores saturating
+t_PLUS_PIPE = r'\+\|'
+t_MINUS_PIPE = r'-\|'
+t_TIMES_PIPE = r'\*\|'
+
 # Operadores aritméticos
 t_PLUS_PLUS = r'\+\+'
-t_POWER = r'\*\*'
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
@@ -233,9 +260,9 @@ t_LESS_EQUALS = r'<='
 t_GREATER_THEN = r'>'
 t_LESS_THEN = r'<'
 
+t_ASSIGN = r'='
+
 # Operadores lógicos
-t_LOGICAL_AND = r'&&'
-t_LOGICAL_OR = r'\|\|'
 t_NOT = r'!'
 
 # Operadores bitwise
@@ -255,6 +282,11 @@ t_LBRACE = r'\{'
 t_RBRACE = r'\}'
 
 # Strings
+def t_C_STRING(t):
+    r'c"([^"\\]|\\.)*"'
+    t.value = t.value[2:-1]
+    return t
+
 def t_STRING(t):
     r'"([^"\\]|\\.)*"'
     t.value = t.value[1:-1]  # Remove aspas
@@ -269,7 +301,7 @@ def t_STRING(t):
 
 # Caracteres
 def t_CHARACTER(t):
-    r"'([^'\\]|\\.)+'"
+    r"'([^'\\]|\\.)'"
     t.value = t.value[1:-1]  # Remove aspas simples
     # Processa escape sequences
     if len(t.value) == 2 and t.value[0] == '\\':
