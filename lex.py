@@ -15,28 +15,22 @@ keywords = [
     'KEYWORD_PUB', 'KEYWORD_RESUME', 'KEYWORD_RETURN', 'KEYWORD_STRUCT',
     'KEYWORD_SUSPEND', 'KEYWORD_SWITCH', 'KEYWORD_TEST', 'KEYWORD_THREADLOCAL',
     'KEYWORD_TRUE', 'KEYWORD_TRY', 'KEYWORD_UNDEFINED', 'KEYWORD_UNION',
-    'KEYWORD_UNREACHABLE', 'KEYWORD_USINGNAMESPACE', 'KEYWORD_VAR', 
+    'KEYWORD_UNREACHABLE', 'KEYWORD_USINGNAMESPACE', 'KEYWORD_VAR',
     'KEYWORD_VOLATILE', 'KEYWORD_WHILE',
 ]
 
 # Tipos de dados do Zig
 data_types = [
-    'TYPE_I8', 'TYPE_I16', 'TYPE_I32', 'TYPE_I64', 'TYPE_I128', 'TYPE_ISIZE',
-    'TYPE_U8', 'TYPE_U16', 'TYPE_U32', 'TYPE_U64', 'TYPE_U128', 'TYPE_USIZE',
-    'TYPE_F16', 'TYPE_F32', 'TYPE_F64', 'TYPE_F80', 'TYPE_F128',
-    'TYPE_BOOL', 'TYPE_VOID', 'TYPE_NORETURN', 'TYPE_TYPE', 'TYPE_ANYERROR',
-    'TYPE_COMPTIME_INT', 'TYPE_COMPTIME_FLOAT', 'TYPE_C_SHORT', 'TYPE_C_USHORT',
-    'TYPE_C_INT', 'TYPE_C_UINT', 'TYPE_C_LONG', 'TYPE_C_ULONG', 'TYPE_C_LONGLONG',
-    'TYPE_C_ULONGLONG', 'TYPE_C_LONGDOUBLE',
+    'TYPE_INT', 'TYPE_BOOL', 'TYPE_VOID', 'TYPE_STRING',
 ]
 
 numbers = [
-    'NUMBER', 'FLOAT_NUMBER', 'BINARY_NUMBER', 'HEXADECIMAL_NUMBER', 'OCTAL_NUMBER'
+    'NUMBER',
 ]
 
 assigns = [
-    'ASSIGN', 'PLUS_ASSIGN', 'MINUS_ASSIGN', 'TIMES_ASSIGN', 'DIVIDE_ASSIGN', 
-    'MODULUS_ASSIGN', 'SHIFT_LEFT_ASSIGN', 'SHIFT_RIGHT_ASSIGN', 
+    'ASSIGN', 'PLUS_ASSIGN', 'MINUS_ASSIGN', 'TIMES_ASSIGN', 'DIVIDE_ASSIGN',
+    'MODULUS_ASSIGN', 'SHIFT_LEFT_ASSIGN', 'SHIFT_RIGHT_ASSIGN',
     'BITWISE_AND_ASSIGN', 'BITWISE_OR_ASSIGN', 'BITWISE_XOR_ASSIGN',
     'PLUS_PERCENT_ASSIGN', 'MINUS_PERCENT_ASSIGN', 'TIMES_PERCENT_ASSIGN',
     'PLUS_PIPE_ASSIGN', 'MINUS_PIPE_ASSIGN', 'TIMES_PIPE_ASSIGN',
@@ -44,9 +38,9 @@ assigns = [
 
 math_operators = [
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULUS',
-    'PLUS_PERCENT', 'MINUS_PERCENT', 'TIMES_PERCENT',  # Operadores wrapping
-    'PLUS_PLUS',  # Concatenação de arrays
-    'PLUS_PIPE', 'MINUS_PIPE', 'TIMES_PIPE',  # Operadores saturating
+    'PLUS_PERCENT', 'MINUS_PERCENT', 'TIMES_PERCENT',
+    'PLUS_PLUS',
+    'PLUS_PIPE', 'MINUS_PIPE', 'TIMES_PIPE',
 ]
 
 logical_operators = [
@@ -54,34 +48,34 @@ logical_operators = [
 ]
 
 compare_operators = [
-    'EQUALS_THEN', 'NOT_EQUALS', 'GREATER_THEN', 'LESS_THEN', 
+    'EQUALS_THEN', 'NOT_EQUALS', 'GREATER_THEN', 'LESS_THEN',
     'LESS_EQUALS', 'GREATER_EQUALS'
 ]
 
 bitwise_operators = [
-    'BITWISE_AND', 'BITWISE_OR', 'BITWISE_XOR', 'BITWISE_COMPLEMENT', 
+    'BITWISE_AND', 'BITWISE_OR', 'BITWISE_XOR', 'BITWISE_COMPLEMENT',
     'BITWISE_SHIFT_LEFT', 'BITWISE_SHIFT_RIGHT'
 ]
 
 others = [
     'IDENTIFIER',
     'IDENTIFIER_ESCAPED',
-    'LPAREN', 'RPAREN',  # ( )
-    'LBRACKET', 'RBRACKET',  # [ ]
-    'LBRACE', 'RBRACE',  # { }
-    'SEMICOLON',  # ;
-    'STRING', 'C_STRING', 'CHARACTER',  # "string", c"string", 'c'
-    'COMMA', 'DOT',  # , .
-    'QUESTION_MARK',  # ?
-    'COLON', 'DOUBLE_COLON',  # : ::
-    'ARROW', 'SWITCH_ARROW',  # ->, =>
-    'RANGE', 'RANGE_INCLUSIVE',  # .. ..=
-    'OPTIONAL_UNWRAP', 'DEREF',  # .? .*
-    'ELLIPSIS',  # ...
-    'PIPE',  # |
-    'AMPERSAND',  # &
-    'AT',  # @
-    'HASH',  # #
+    'LPAREN', 'RPAREN',
+    'LBRACKET', 'RBRACKET',
+    'LBRACE', 'RBRACE',
+    'SEMICOLON',
+    'STRING', 'C_STRING', 'CHARACTER',
+    'COMMA', 'DOT',
+    'QUESTION_MARK',
+    'COLON', 'DOUBLE_COLON',
+    'ARROW', 'SWITCH_ARROW',
+    'RANGE', 'RANGE_INCLUSIVE',
+    'OPTIONAL_UNWRAP', 'DEREF',
+    'ELLIPSIS',
+    'PIPE',
+    'AMPERSAND',
+    'AT',
+    'HASH',
 ]
 
 # Junta todos os tokens
@@ -143,41 +137,12 @@ reserved = {
     'var': 'KEYWORD_VAR',
     'volatile': 'KEYWORD_VOLATILE',
     'while': 'KEYWORD_WHILE',
-    
-    # Tipos primitivos
-    'i8': 'TYPE_I8',
-    'i16': 'TYPE_I16',
-    'i32': 'TYPE_I32',
-    'i64': 'TYPE_I64',
-    'i128': 'TYPE_I128',
-    'isize': 'TYPE_ISIZE',
-    'u8': 'TYPE_U8',
-    'u16': 'TYPE_U16',
-    'u32': 'TYPE_U32',
-    'u64': 'TYPE_U64',
-    'u128': 'TYPE_U128',
-    'usize': 'TYPE_USIZE',
-    'f16': 'TYPE_F16',
-    'f32': 'TYPE_F32',
-    'f64': 'TYPE_F64',
-    'f80': 'TYPE_F80',
-    'f128': 'TYPE_F128',
+
+    # Tipos primitivos (sem duplicação)
+    'int': 'TYPE_INT',
     'bool': 'TYPE_BOOL',
     'void': 'TYPE_VOID',
-    'noreturn': 'TYPE_NORETURN',
-    'type': 'TYPE_TYPE',
-    'anyerror': 'TYPE_ANYERROR',
-    'comptime_int': 'TYPE_COMPTIME_INT',
-    'comptime_float': 'TYPE_COMPTIME_FLOAT',
-    'c_short': 'TYPE_C_SHORT',
-    'c_ushort': 'TYPE_C_USHORT',
-    'c_int': 'TYPE_C_INT',
-    'c_uint': 'TYPE_C_UINT',
-    'c_long': 'TYPE_C_LONG',
-    'c_ulong': 'TYPE_C_ULONG',
-    'c_longlong': 'TYPE_C_LONGLONG',
-    'c_ulonglong': 'TYPE_C_ULONGLONG',
-    'c_longdouble': 'TYPE_C_LONGDOUBLE',
+    'string': 'TYPE_STRING',
 }
 
 # Comentários (ignorados)
@@ -289,8 +254,7 @@ def t_C_STRING(t):
 
 def t_STRING(t):
     r'"([^"\\]|\\.)*"'
-    t.value = t.value[1:-1]  # Remove aspas
-    # Processa escape sequences básicas
+    t.value = t.value[1:-1]
     t.value = t.value.replace('\\n', '\n')
     t.value = t.value.replace('\\t', '\t')
     t.value = t.value.replace('\\r', '\r')
@@ -302,37 +266,26 @@ def t_STRING(t):
 # Caracteres
 def t_CHARACTER(t):
     r"'([^'\\]|\\.)'"
-    t.value = t.value[1:-1]  # Remove aspas simples
-    # Processa escape sequences
+    t.value = t.value[1:-1]
     if len(t.value) == 2 and t.value[0] == '\\':
         escapes = {'n': '\n', 't': '\t', 'r': '\r', '\\': '\\', "'": "'", '0': '\0'}
         t.value = escapes.get(t.value[1], t.value[1])
     return t
 
-# Números (ordem importa - mais específicos primeiro)
-def t_FLOAT_NUMBER(t):
-    r'[0-9][0-9_]*\.[0-9][0-9_]*([eE][+-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*'
-    t.value = float(t.value.replace('_', ''))
-    return t
-
-def t_HEXADECIMAL_NUMBER(t):
-    r'0[xX][0-9A-Fa-f_]+'
-    t.value = int(t.value.replace('_', ''), 16)
-    return t
-
-def t_BINARY_NUMBER(t):
-    r'0[bB][01_]+'
-    t.value = int(t.value.replace('_', ''), 2)
-    return t
-
-def t_OCTAL_NUMBER(t):
-    r'0[oO][0-7_]+'
-    t.value = int(t.value.replace('_', ''), 8)
-    return t
-
+# Números
 def t_NUMBER(t):
-    r'[0-9][0-9_]*'
-    t.value = int(t.value.replace('_', ''))
+    r'0[xX][0-9A-Fa-f_]+|0[bB][01_]+|0[oO][0-7_]+|[0-9][0-9_]*(\.[0-9][0-9_]*)?([eE][+-]?[0-9][0-9_]*)?'
+    raw = t.value.replace('_', '')
+    if raw.startswith(('0x', '0X')):
+        t.value = int(raw, 16)
+    elif raw.startswith(('0b', '0B')):
+        t.value = int(raw, 2)
+    elif raw.startswith(('0o', '0O')):
+        t.value = int(raw, 8)
+    elif '.' in raw or 'e' in raw or 'E' in raw:
+        t.value = float(raw)
+    else:
+        t.value = int(raw)
     return t
 
 # Identificadores e palavras reservadas
@@ -359,48 +312,22 @@ lexer = lex.lex()
 
 # Código de teste
 code = '''
-const std = @import("std");
+const x: int = 42;
+var y: int = 10;
 
-pub fn main() !void {
-    const x: i32 = 42;
-    var y: f64 = 3.14;
-    
-    // Operadores wrapping
-    const a = x +% 10;
-    const b = x -% 5;
-    const c = x *% 2;
-    
-    // Números em diferentes bases
-    const hex = 0xFF;
-    const bin = 0b1010;
-    const oct = 0o77;
-    const float_val = 1.5e-10;
-    const sep = 1_000_000;
-    
-    if (x > 0) {
-        std.debug.print("Positivo\\n", .{});
+fn add(a: int, b: int) int {
+    var c: int = a + b;
+    return c;
+}
+
+fn main() void {
+    if (x > y) {
+        y = x;
     } else {
-        return;
+        y = y + 1;
     }
-    
-    const z = x + 10;
     return;
 }
-
-fn add(a: i32, b: i32) i32 {
-    return a + b;
-}
-
-const Point = struct {
-    x: f32,
-    y: f32,
-};
-
-const Color = enum {
-    Red,
-    Green,
-    Blue,
-};
 '''
 
 if __name__ == "__main__":
