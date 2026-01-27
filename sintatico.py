@@ -70,7 +70,8 @@ def p_data_type(p):
     '''data_type : TYPE_INT
                  | TYPE_BOOL
                  | TYPE_VOID
-                 | TYPE_STRING'''
+                 | TYPE_STRING
+                 | TYPE_CHAR'''
     p[0] = p[1]
 
 # Funções

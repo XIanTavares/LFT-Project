@@ -21,7 +21,7 @@ keywords = [
 
 # Tipos de dados do Zig
 data_types = [
-    'TYPE_INT', 'TYPE_BOOL', 'TYPE_VOID', 'TYPE_STRING',
+    'TYPE_INT', 'TYPE_BOOL', 'TYPE_VOID', 'TYPE_STRING', 'TYPE_CHAR',
 ]
 
 numbers = [
@@ -143,6 +143,7 @@ reserved = {
     'bool': 'TYPE_BOOL',
     'void': 'TYPE_VOID',
     'string': 'TYPE_STRING',
+    'char': 'TYPE_CHAR',
 }
 
 # Comentários (ignorados)
