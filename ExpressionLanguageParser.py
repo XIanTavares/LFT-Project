@@ -1,7 +1,7 @@
 import logging
 import ply.yacc as yacc
-from lex import tokens, lexer
-import sintaxeabstrata as sa
+from ExpressionLanguageLex import tokens, lexer
+import SintaxeAbstrata as sa
 
 arquivos_zig = []
 isFine = True

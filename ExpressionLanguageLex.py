@@ -1,6 +1,6 @@
 import ply.lex as lex
 
-# Lista de nomes de tokens - Organizados por categoria
+# Lista de nomes de tokens
 
 keywords = [
     'KEYWORD_ADDRSPACE', 'KEYWORD_ALIGN', 'KEYWORD_ALLOWZERO', 'KEYWORD_AND',

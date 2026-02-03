@@ -11,11 +11,12 @@ nivel = 0
 def _indent() -> str:
     return " " * nivel
 
-
-# Programa
 @dataclass
 class Program:
     items: List[Item]
+
+    def accept(self, visitor):
+        return visitor.visitProgram(self)
 
     def print(self):
         for i, item in enumerate(self.items):
@@ -24,8 +25,11 @@ class Program:
                 print()
 
 
-# Itens de nível superior
 class Item(ABC):
+    @abstractmethod
+    def accept(self, visitor):
+        pass
+
     @abstractmethod
     def print(self):
         pass
@@ -36,6 +40,9 @@ class ConstDecl(Item):
     name: str
     type_spec: Optional[str]
     value: Expression
+
+    def accept(self, visitor):
+        return visitor.visitConstDecl(self)
 
     def print(self):
         type_part = f": {self.type_spec}" if self.type_spec else ""
@@ -49,6 +56,9 @@ class VarDecl(Item):
     name: str
     type_spec: Optional[str]
     value: Expression
+
+    def accept(self, visitor):
+        return visitor.visitVarDecl(self)
 
     def print(self):
         type_part = f": {self.type_spec}" if self.type_spec else ""
@@ -65,6 +75,9 @@ class Function(Item):
     body: Block
     visibility: Optional[str]
 
+    def accept(self, visitor):
+        return visitor.visitFunction(self)
+
     def print(self):
         vis = "pub " if self.visibility else ""
         params_txt = ", ".join([p.format() for p in self.params])
@@ -78,14 +91,18 @@ class Param:
     name: str
     type_spec: str
 
+    def accept(self, visitor):
+        return visitor.visitParam(self)
+
     def format(self) -> str:
         return f"{self.name}: {self.type_spec}"
 
-
-# Blocos e comandos
 @dataclass
 class Block:
     statements: List[Statement]
+
+    def accept(self, visitor):
+        return visitor.visitBlock(self)
 
     def print(self):
         global nivel
@@ -102,6 +119,10 @@ class Block:
 
 class Statement(ABC):
     @abstractmethod
+    def accept(self, visitor):
+        pass
+
+    @abstractmethod
     def print(self):
         pass
 
@@ -109,6 +130,9 @@ class Statement(ABC):
 @dataclass
 class ExprStmt(Statement):
     expr: Expression
+
+    def accept(self, visitor):
+        return visitor.visitExprStmt(self)
 
     def print(self):
         self.expr.print()
@@ -120,6 +144,9 @@ class AssignStmt(Statement):
     name: str
     value: Expression
 
+    def accept(self, visitor):
+        return visitor.visitAssignStmt(self)
+
     def print(self):
         print(f"{self.name} = ", end="")
         self.value.print()
@@ -129,6 +156,9 @@ class AssignStmt(Statement):
 @dataclass
 class ReturnStmt(Statement):
     value: Optional[Expression]
+
+    def accept(self, visitor):
+        return visitor.visitReturnStmt(self)
 
     def print(self):
         if self.value is None:
@@ -145,6 +175,9 @@ class IfStmt(Statement):
     then_block: Block
     else_block: Optional[Block]
 
+    def accept(self, visitor):
+        return visitor.visitIfStmt(self)
+
     def print(self):
         print("if (", end="")
         self.condition.print()
@@ -160,15 +193,20 @@ class WhileStmt(Statement):
     condition: Expression
     body: Block
 
+    def accept(self, visitor):
+        return visitor.visitWhileStmt(self)
+
     def print(self):
         print("while (", end="")
         self.condition.print()
         print(") ", end="")
         self.body.print()
 
-
-# Expressões
 class Expression(ABC):
+    @abstractmethod
+    def accept(self, visitor):
+        pass
+
     @abstractmethod
     def print(self):
         pass
@@ -179,6 +217,9 @@ class BinaryExpr(Expression):
     op: str
     left: Expression
     right: Expression
+
+    def accept(self, visitor):
+        return visitor.visitBinaryExpr(self)
 
     def print(self):
         print("(", end="")
@@ -193,6 +234,9 @@ class UnaryExpr(Expression):
     op: str
     expr: Expression
 
+    def accept(self, visitor):
+        return visitor.visitUnaryExpr(self)
+
     def print(self):
         print(f"{self.op}", end="")
         self.expr.print()
@@ -201,6 +245,9 @@ class UnaryExpr(Expression):
 @dataclass
 class Literal(Expression):
     value: Union[int, float, bool, str]
+
+    def accept(self, visitor):
+        return visitor.visitLiteral(self)
 
     def print(self):
         if isinstance(self.value, str):
@@ -212,6 +259,9 @@ class Literal(Expression):
 @dataclass
 class Identifier(Expression):
     name: str
+
+    def accept(self, visitor):
+        return visitor.visitIdentifier(self)
 
     def print(self):
         print(self.name, end="")
