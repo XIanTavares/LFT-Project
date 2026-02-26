@@ -265,3 +265,20 @@ class Identifier(Expression):
 
     def print(self):
         print(self.name, end="")
+
+
+@dataclass
+class FunctionCall(Expression):
+    name: str
+    args: List[Expression]
+
+    def accept(self, visitor):
+        return visitor.visitFunctionCall(self)
+
+    def print(self):
+        args_txt = ""
+        for i, arg in enumerate(self.args):
+            arg.print()
+            if i < len(self.args) - 1:
+                print(", ", end="")
+        print(f"{self.name}({args_txt})", end="")

@@ -226,6 +226,46 @@ class SemanticVisitor(AbstractVisitor):
         print(f"\n\t[Erro] Identificador '{identifier.name}' não foi declarado.\n")
         return None
 
+    def visitFunctionCall(self, functionCall):
+        bindable = st.getBindable(functionCall.name)
+        
+        if bindable is None:
+            self.n_errors += 1
+            print(f"\n\t[Erro] Função '{functionCall.name}' não foi declarada.\n")
+            return None
+        
+        if bindable[st.BINDABLE] != st.FUNCTION:
+            self.n_errors += 1
+            print(f"\n\t[Erro] '{functionCall.name}' não é uma função.\n")
+            return None
+        
+        # Verificar número de parâmetros
+        paramsList = bindable[st.PARAMS]
+        expectedCount = len(paramsList) // 2
+        actualCount = len(functionCall.args)
+        
+        if expectedCount != actualCount:
+            self.n_errors += 1
+            print(f"\n\t[Erro] Chamada da função '{functionCall.name}' com número incorreto de argumentos.")
+            print(f"\tEsperado: {expectedCount}, recebido: {actualCount}\n")
+            return bindable[st.TYPE]
+        
+        # Verificar tipos dos parâmetros
+        expectedTypes = paramsList[1::2]  # tipos nas posições ímpares
+        actualTypes = []
+        for arg in functionCall.args:
+            actualTypes.append(arg.accept(self))
+        
+        for i, (expected, actual) in enumerate(zip(expectedTypes, actualTypes)):
+            if actual is not None and expected != actual:
+                if coercion(expected, actual) is None:
+                    self.n_errors += 1
+                    paramName = paramsList[i * 2]
+                    print(f"\n\t[Erro] Tipo incompatível no argumento '{paramName}' da função '{functionCall.name}'.")
+                    print(f"\tEsperado: {expected}, recebido: {actual}\n")
+        
+        return bindable[st.TYPE]
+
     def getnerros(self):
         return self.n_errors
 
@@ -242,16 +282,18 @@ fn add(a: int, b: int) int {
     return c;
 }
 
-fn main() void {
+fn main() int {
     if (x > y) {
         y = x;
     } else {
         y = y + 1;
     }
-    return;
+
+    var x: int = add(10, 50);
+    return x;
 }
 '''
-    print("# Análise Semântica")
+    print("# Análise Semântica #")
     print("=" * 50)
     result = parse(code)
     

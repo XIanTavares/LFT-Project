@@ -104,6 +104,14 @@ class Visitor(AbstractVisitor):
     def visitIdentifier(self, identifier):
         print(identifier.name, end="")
 
+    def visitFunctionCall(self, functionCall):
+        print(f"{functionCall.name}(", end="")
+        for i, arg in enumerate(functionCall.args):
+            arg.accept(self)
+            if i < len(functionCall.args) - 1:
+                print(", ", end="")
+        print(")", end="")
+
 
 def main():
     code = '''

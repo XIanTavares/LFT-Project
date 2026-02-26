@@ -46,3 +46,6 @@ class AbstractVisitor(metaclass=ABCMeta):
 
     @abstractmethod
     def visitIdentifier(self, identifier): pass
+
+    @abstractmethod
+    def visitFunctionCall(self, functionCall): pass

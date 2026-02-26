@@ -215,12 +215,14 @@ def p_primary(p):
     '''primary : NUMBER
                | STRING
                | CHARACTER
-               | IDENTIFIER
                | KEYWORD_TRUE
                | KEYWORD_FALSE
-               | LPAREN expression RPAREN'''
+               | LPAREN expression RPAREN
+               | call'''
     if len(p) == 2:
-        if p.slice[1].type == 'KEYWORD_TRUE':
+        if isinstance(p[1], sa.FunctionCall):
+            p[0] = p[1]
+        elif p.slice[1].type == 'KEYWORD_TRUE':
             p[0] = sa.Literal(True)
         elif p.slice[1].type == 'KEYWORD_FALSE':
             p[0] = sa.Literal(False)
@@ -232,6 +234,31 @@ def p_primary(p):
             p[0] = sa.Identifier(p[1])
     else:
         p[0] = p[2]
+
+
+def p_primary_id(p):
+    '''primary : IDENTIFIER'''
+    p[0] = sa.Identifier(p[1])
+
+
+def p_call(p):
+    '''call : IDENTIFIER LPAREN args_opt RPAREN'''
+    p[0] = sa.FunctionCall(p[1], p[3] or [])
+
+
+def p_args_opt(p):
+    '''args_opt : args
+                | empty'''
+    p[0] = p[1]
+
+
+def p_args(p):
+    '''args : args COMMA expression
+            | expression'''
+    if len(p) == 4:
+        p[0] = p[1] + [p[3]]
+    else:
+        p[0] = [p[1]]
 
 
 def p_empty(p):
