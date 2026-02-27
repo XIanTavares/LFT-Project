@@ -254,26 +254,8 @@ class AssemblyVisitor(AbstractVisitor):
 
 
 def main():
-    code = '''
-const x: int = 10;
-var y: int = 5;
-
-fn add(a: int, b: int) int {
-    var c: int = a + b;
-    return c;
-}
-
-fn main() void {
-    if (x > y) {
-        y = x;
-    } else {
-        y = y + 1;
-    }
-    return;
-}
-'''
-
-    result = parse(code)
+    f = open("input1.zig", "r")
+    result = parse(f.read())
     if result is not None:
         assemblyvisitor = AssemblyVisitor()
         result.accept(assemblyvisitor)

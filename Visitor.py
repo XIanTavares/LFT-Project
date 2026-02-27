@@ -114,25 +114,8 @@ class Visitor(AbstractVisitor):
 
 
 def main():
-    code = '''
-const x: i32 = 10;
-var y: i32 = 5;
-
-fn add(a: i32, b: i32) i32 {
-    var c: i32 = a + b;
-    return c;
-}
-
-fn main() void {
-    if (x > y) {
-        y = x;
-    } else {
-        y = y + 1;
-    }
-    return;
-}
-'''
-    result = parse(code)
+    f = open("input1.zig", "r")
+    result = parse(f.read())
     visitor = Visitor()
     result.accept(visitor)
 

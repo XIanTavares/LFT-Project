@@ -312,24 +312,8 @@ def t_error(t):
 lexer = lex.lex()
 
 # Código de teste
-code = '''
-const x: int = 42;
-var y: int = 10;
-
-fn add(a: int, b: int) int {
-    var c: int = a + b;
-    return c;
-}
-
-fn main() void {
-    if (x > y) {
-        y = x;
-    } else {
-        y = y + 1;
-    }
-    return;
-}
-'''
+f = open("input1.zig", "r")
+code = f.read()
 
 if __name__ == "__main__":
     print("\n" + "=" * 100)
