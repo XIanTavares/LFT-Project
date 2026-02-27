@@ -276,9 +276,9 @@ class FunctionCall(Expression):
         return visitor.visitFunctionCall(self)
 
     def print(self):
-        args_txt = ""
+        print(f"{self.name}(", end="")
         for i, arg in enumerate(self.args):
             arg.print()
             if i < len(self.args) - 1:
                 print(", ", end="")
-        print(f"{self.name}({args_txt})", end="")
+        print(")", end="")
