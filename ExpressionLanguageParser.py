@@ -321,7 +321,10 @@ def main():
     else:
         f = open("input1.zig", "r")
         result = parse(f.read())
-        print_result(result)
+        if result is not None:
+            print_result(result)
+        else:
+            print("Erro: programa nao foi reconhecido pelo parser.")
 
 
 if __name__ == "__main__":

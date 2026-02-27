@@ -116,6 +116,9 @@ class Visitor(AbstractVisitor):
 def main():
     f = open("input1.zig", "r")
     result = parse(f.read())
+    if result is None:
+        print("Erro: programa nao foi reconhecido pelo parser.")
+        return
     visitor = Visitor()
     result.accept(visitor)
 
