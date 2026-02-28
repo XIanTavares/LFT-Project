@@ -16,7 +16,13 @@ class AssemblyVisitor(AbstractVisitor):
         self.text.append(".text")
         self.text.append("    move $fp, $sp")
         self.data = set()
+        self.string_data = {}
+        self.str_count = 0
         self.rotulos = {}
+        self.var_types = {}
+        self.func_ret_types = {}
+        # Registrar funcoes nativas
+        st.addFunction('print', ['value', '.word'], st.VOID)
 
     def novo_rotulo(self, string):
         if string not in self.rotulos:
@@ -35,6 +41,9 @@ class AssemblyVisitor(AbstractVisitor):
 
     def visitConstDecl(self, constDecl):
         name = constDecl.name
+        import SintaxeAbstrata as sa
+        if isinstance(constDecl.value, sa.Literal) and isinstance(constDecl.value.str_value if hasattr(constDecl.value, 'str_value') else constDecl.value.value, str) and not isinstance(constDecl.value.value, bool):
+            self.var_types[name] = 'string'
         constDecl.value.accept(self)
         self.data.add(name)
         st.addConst(name, getAssemblyType())
@@ -43,6 +52,14 @@ class AssemblyVisitor(AbstractVisitor):
     def visitVarDecl(self, varDecl):
         code = self.getList()
         name = varDecl.name
+        import SintaxeAbstrata as sa
+        # Detectar tipo string (literal ou chamada de funcao que retorna string)
+        if isinstance(varDecl.value, sa.Literal) and isinstance(varDecl.value.value, str) and not isinstance(varDecl.value.value, bool):
+            self.var_types[name] = 'string'
+        elif isinstance(varDecl.value, sa.FunctionCall):
+            # Marcar como string somente se a funcao retorna string
+            if self.func_ret_types.get(varDecl.value.name) == 'string':
+                self.var_types[name] = 'string'
         varDecl.value.accept(self)
         if st.getScope() == st.SCOPE_GLOBAL:
             self.data.add(name)
@@ -60,6 +77,9 @@ class AssemblyVisitor(AbstractVisitor):
             params.append(getAssemblyType())
 
         returnType = getAssemblyType()
+        # Registrar tipo de retorno da funcao (para detectar string)
+        if function.return_type == 'string':
+            self.func_ret_types[function.name] = 'string'
         st.addFunction(function.name, params, returnType)
         st.beginScope(function.name)
 
@@ -67,12 +87,27 @@ class AssemblyVisitor(AbstractVisitor):
         code.append(f"{function.name}:")
         code.append("    move $fp, $sp")
 
-        if params:
-            for k in range(0, len(params), 2):
-                st.addVar(params[k], params[k + 1])
+        # Parametros ficam em offsets POSITIVOS a partir de $fp
+        # Corpo da pilha ao entrar na funcao:
+        #   0($fp) = saved $fp
+        #   4($fp) = saved $ra
+        #   8($fp) = ultimo argumento empilhado
+        #   12($fp) = penultimo argumento
+        n_params = len(params) // 2
+        for k in range(0, len(params), 2):
+            param_index = k // 2
+            offset = 8 + 4 * (n_params - 1 - param_index)
+            st.symbolTable[-1][params[k]] = {
+                st.BINDABLE: st.VARIABLE,
+                st.TYPE: params[k + 1],
+                st.OFFSET: offset
+            }
 
-        code.append(f"    addi $sp, $sp, {st.getSP()}")
+        sp_placeholder_index = len(code)
+        code.append("    addi $sp, $sp, 0")
         function.body.accept(self)
+        code[sp_placeholder_index] = f"    addi $sp, $sp, {st.getSP()}"
+
         st.endScope()
 
     def visitParam(self, param):
@@ -186,7 +221,6 @@ class AssemblyVisitor(AbstractVisitor):
             code.append("    sub $v0, $zero, $v0")
         elif unaryExpr.op == '!':
             code.append("    xori $v0, $v0, 1")
-        # '+' unario nao faz nada
 
     def visitLiteral(self, literal):
         code = self.getList()
@@ -196,8 +230,11 @@ class AssemblyVisitor(AbstractVisitor):
         elif isinstance(value, (int, float)):
             code.append(f"    li $v0, {int(value)}")
         elif isinstance(value, str):
-            # Strings sao tratadas como dados (simplificado)
-            code.append(f"    li $v0, 0")
+            # Armazenar string no .data e carregar endereco
+            str_label = f"str_{self.str_count}"
+            self.str_count += 1
+            self.string_data[str_label] = value
+            code.append(f"    la $v0, {str_label}")
 
     def visitIdExp(self, idExp):
         code = self.getList()
@@ -219,34 +256,72 @@ class AssemblyVisitor(AbstractVisitor):
 
     def visitFunctionCall(self, functionCall):
         code = self.getList()
-        # Salvar contexto
-        code.append("    addi $sp, $sp, -8")
-        st.addSP(-8)
-        oldSP = st.getSP()
-        code.append("    sw $ra, 0($sp)")
-        code.append("    sw $fp, 4($sp)")
-        # Empilhar argumentos
+        # Funcao print(valor)
+        if functionCall.name == 'print':
+            if len(functionCall.args) > 0:
+                arg = functionCall.args[0]
+                # Verificar se o argumento e uma string literal
+                import SintaxeAbstrata as sa
+                if isinstance(arg, sa.Literal) and isinstance(arg.value, str):
+                    # Armazenar string no .data como .asciiz
+                    str_label = f"str_{self.str_count}"
+                    self.str_count += 1
+                    self.string_data[str_label] = arg.value
+                    # Carregar endereco da string
+                    code.append(f"    la $a0, {str_label}")
+                    # Syscall 4 = print_string
+                    code.append("    li $v0, 4")
+                    code.append("    syscall")
+                elif isinstance(arg, sa.Identifier) and self.var_types.get(arg.name) == 'string':
+                    # Variavel do tipo string - carregar endereco e usar syscall 4
+                    arg.accept(self)
+                    code.append("    move $a0, $v0")
+                    code.append("    li $v0, 4")
+                    code.append("    syscall")
+                else:
+                    # Avaliar expressao inteira
+                    arg.accept(self)
+                    code.append("    move $a0, $v0")
+                    # Syscall 1 = print_int
+                    code.append("    li $v0, 1")
+                    code.append("    syscall")
+            # Imprimir newline (syscall 11, char 10)
+            code.append("    li $v0, 11")
+            code.append("    li $a0, 10")
+            code.append("    syscall")
+            return
+        # Empilhar argumentos no $sp
+        n_args = len(functionCall.args)
         for arg in functionCall.args:
             arg.accept(self)
-            st.addSP(-4)
-            code.append(f"    sw $v0, {st.getSP()}($fp)")
+            code.append("    addi $sp, $sp, -4")
+            code.append("    sw $v0, 0($sp)")
+        # Salvar contexto (ra + fp)
+        code.append("    addi $sp, $sp, -8")
+        code.append("    sw $ra, 4($sp)")
+        code.append("    sw $fp, 0($sp)")
         # Chamar funcao
         code.append(f"    jal {functionCall.name}")
         # Restaurar contexto
-        code.append("    lw $fp, 4($sp)")
-        code.append("    lw $ra, 0($sp)")
+        code.append("    lw $fp, 0($sp)")
+        code.append("    lw $ra, 4($sp)")
         code.append("    addi $sp, $sp, 8")
-        st.addSP(oldSP - st.getSP())
-        st.addSP(8)
+        # Desempilhar argumentos
+        if n_args > 0:
+            code.append(f"    addi $sp, $sp, {4 * n_args}")
 
-    # Gera codigo assembly completo
+    # Gera codigo assembly final
     def get_code(self):
         finalcode = []
-        if self.data:
+        if self.data or self.string_data:
             finalcode.append(".data")
             for globalVar in sorted(self.data):
                 finalcode.append(f"    {globalVar}: .word 0")
+            for label, value in self.string_data.items():
+                escaped = value.replace('\n', '\\n').replace('\t', '\\t')
+                finalcode.append(f'    {label}: .asciiz "{escaped}"')
         finalcode = finalcode + self.text
+        finalcode.append("    jal main")
         finalcode.append("    j end")
         finalcode = finalcode + self.funcs
         finalcode.append("\nend:\n    li $v0, 10\n    syscall")

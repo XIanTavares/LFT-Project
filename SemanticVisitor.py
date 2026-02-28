@@ -23,6 +23,8 @@ class SemanticVisitor(AbstractVisitor):
         self.printer = Visitor()
         self.n_errors = 0
         st.beginScope('global')
+        # Registrar funcoes built-in (nativas)
+        st.addFunction('print', ['value', st.INT], st.VOID)
 
     def visitProgram(self, program):
         for item in program.items:
@@ -238,6 +240,15 @@ class SemanticVisitor(AbstractVisitor):
             self.n_errors += 1
             print(f"\n\t[Erro] '{functionCall.name}' não é uma função.\n")
             return None
+        
+        # Função print aceita (int, string)
+        if functionCall.name == 'print':
+            if len(functionCall.args) != 1:
+                self.n_errors += 1
+                print(f"\n\t[Erro] 'print' espera exatamente 1 argumento, recebeu {len(functionCall.args)}\n")
+            else:
+                functionCall.args[0].accept(self)
+            return st.VOID
         
         # Verificar número de parâmetros
         paramsList = bindable[st.PARAMS]
